@@ -47,6 +47,7 @@ reg = batchtools::makeExperimentRegistry(
   seed = 1L,
   packages = c("tspgen", "salesperson"),
   source = c("../src/qd.R", "defs.R", "../src/utils.R"))
+reg$cluster.functions = batchtools::makeClusterFunctionsMulticore(ncpus = 8L, fs.latency = 0)
 
 # no problem at all
 batchtools::addProblem("DUMMY", data = list())
@@ -77,8 +78,10 @@ qplot(nng_5_n_strong, mst_depth_median, color = obj, data = res)
 qplot(nng_5_n_strong, mst_depth_median, fill = obj, data = res, geom = "tile")
 
 # # COLLECT
-# jt = getJobTable()
-# res = batchtools::reduceResultsDataTable(findDone())
-# res = unwrap(res)
+#jt = unwrap(getJobTable()[, c("job.id", "algo.pars")])
+res = reduceResultsList(findDone())
+saveRDS(res, file = "../data/study01.rds")
+
+# res = do.call(rbind,batchtools::reduceResultsList(findDone()))
 # res = dplyr::left_join(res, jt[, c("job.id", "repl")], by = "job.id")
 # write.table(res, file = "data/results_unconstrained_overlap_with_fixed_budget.csv", row.names = FALSE, quote = FALSE)

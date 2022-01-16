@@ -1,6 +1,7 @@
 DATA.DIR = "../data/study01/results"
 STORAGE.DIR = "../qdstorage/study01/storage"
-MAX.TIME = 100 #60 * 60 * 24 * 2 # 48h
+MAX.TIME = Inf #60 * 60 * 24 * 2 # 48h
+MAX.ITER =  5000L
 CUTOFF.TIME = 60 * 3 # 3m
 REPLS = 3L # number of runs for stochastic algorithms
 
@@ -138,10 +139,11 @@ runner = function(job, data, ...) {
     feat.fun,
     feats.of.interest,
     n = args$n,
-    max.iter = Inf,
+    max.iter = MAX.ITER,
     max.time = MAX.TIME,
     storage.path = storage)
+  res$job.id = job$job.id
 
   saveRDS(res, file = file.path(DATA.DIR, sprintf("QD_%i.rds", job$job.id)))
-  return(res)
+  return(list(res = res, job = job))
 }
