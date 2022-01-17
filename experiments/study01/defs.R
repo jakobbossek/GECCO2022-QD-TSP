@@ -1,13 +1,13 @@
 DATA.DIR = "../data/study01/results"
 STORAGE.DIR = "../qdstorage/study01/storage"
 MAX.TIME = Inf #60 * 60 * 24 * 2 # 48h
-MAX.ITER =  5000L
+MAX.EVALS =  5000L
 CUTOFF.TIME = 60 * 3 # 3m
 REPLS = 3L # number of runs for stochastic algorithms
 
 ALGO.PARS = list(
-  "nearest-neighbor" = list(),
-  "farthest-neighbor" = list(),
+  "nearest_insertion" = list(),
+  "farthest_insertion" = list(),
   "eax" = list(with.restarts = TRUE),
   "lkh" = list(with.restarts = TRUE, max.trials = 1e8)
 )
@@ -56,6 +56,13 @@ make_feature_fun = function(feats.of.interest) {
   function(x) {
     unlist(salesperson::getFeatureSet(x, black.list = "VRP", normalize = TRUE)[feats.of.interest])
   }
+}
+
+make_mutator_collection = function(name) {
+  switch(name,
+    "all" = tspgen::init("sophisticated"),
+    "simple" = tspgen::init("simple")
+  ) # switch
 }
 
 # Generate objective function
@@ -111,7 +118,7 @@ make_objective_fun = function(algo.a, algo.b, algo.pars.a = list(), algo.pars.b 
     res.a = runAlgorihm(x, algo.a, algo.pars.a, repls.a)
     res.b = runAlgorihm(x, algo.b, algo.pars.b, repls.b)
 
-    return(res.a / res.b)
+    return(list(algo.a =res.a, algo.b = res.b, obj = res.a / res.b))
   }
 }
 
@@ -127,6 +134,7 @@ runner = function(job, data, ...) {
     cutoff.time = CUTOFF.TIME)
   feats.of.interest = as.character(strsplit(args$feats, split = ",")[[1L]])
   feat.fun = make_feature_fun(feats.of.interest)
+  collection = make_mutator_collection(args$collection)
 
   # storage
   storage = file.path(STORAGE.DIR, sprintf("%i", job$job.id))
@@ -134,16 +142,19 @@ runner = function(job, data, ...) {
     dir.create(storage, recursive = TRUE)
 
   # run QD algorithm
-  res = qd(
-    obj.fun,
-    feat.fun,
-    feats.of.interest,
+  evolver = get(args$method)
+  res = evolver(
+    obj.fun = obj.fun,
+    feat.fun = feat.fun,
+    feats.of.interest = feats.of.interest,
     n = args$n,
-    max.iter = MAX.ITER,
+    mu = args$mu, # NOTE: ignored by QD-algorithm
+    max.evals = MAX.EVALS,
     max.time = MAX.TIME,
-    storage.path = storage)
+    storage.path = storage,
+    collection = collection)
   res$job.id = job$job.id
 
-  saveRDS(res, file = file.path(DATA.DIR, sprintf("QD_%i.rds", job$job.id)))
+  saveRDS(res, file = file.path(DATA.DIR, sprintf("EVOLVE_%i.rds", job$job.id)))
   return(list(res = res, job = job))
 }

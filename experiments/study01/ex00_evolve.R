@@ -46,7 +46,7 @@ reg = batchtools::makeExperimentRegistry(
   file.dir = file.dir,
   seed = 1L,
   packages = c("tspgen", "salesperson"),
-  source = c("../src/qd.R", "defs.R", "../src/utils.R"))
+  source = c("../src/algorithms.R", "defs.R", "../src/utils.R"))
 reg$cluster.functions = batchtools::makeClusterFunctionsMulticore(ncpus = 8L, fs.latency = 0)
 
 # no problem at all
@@ -80,8 +80,6 @@ qplot(nng_5_n_strong, mst_depth_median, fill = obj, data = res, geom = "tile")
 # # COLLECT
 #jt = unwrap(getJobTable()[, c("job.id", "algo.pars")])
 res = reduceResultsList(findDone())
-saveRDS(res, file = "../data/study01.rds")
-
-# res = do.call(rbind,batchtools::reduceResultsList(findDone()))
-# res = dplyr::left_join(res, jt[, c("job.id", "repl")], by = "job.id")
-# write.table(res, file = "data/results_unconstrained_overlap_with_fixed_budget.csv", row.names = FALSE, quote = FALSE)
+saveRDS(res, file = "../data/study01_data.rds")
+jt = unwrap(getJobTable()[, c("job.id", "repl", "algo.pars")])
+saveRDS(jt, file = "../data/study01_jt.rds")
