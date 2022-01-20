@@ -14,8 +14,8 @@ if (!dir.exists(plot.dir)) dir.create(plot.dir, recursive = TRUE)
 # DATA IMPORT
 # ===
 
-res = readRDS("../data/study01_data.rds")
-jt = readRDS("../data/study01_jt.rds")
+res = readRDS("../data/study01_data.rds") # results
+jt = readRDS("../data/study01_jt.rds") # job table (with algorithm parameters)
 
 dfs = do.call(rbind, lapply(res, function(e) e$res))
 dfs = dplyr::left_join(dfs, jt, by = "job.id")
@@ -43,9 +43,14 @@ dfs$method = NULL
 # ===
 
 # Q: How many cells are covered (i.e., how many instances are produced?)
-dfs %>%
+cnt = dfs %>%
   group_by(target, algo.pair, evolver, feature.names) %>%
   dplyr::summarize(n = n())
+
+g = ggplot(cnt, aes(x = evolver, y = n)) + geom_bar(stat = "identity")
+g = g + facet_grid(. ~ algo.pair)
+g = g + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave(file.path(plot.dir, "count.pdf"), plot = g, width = 8, height = 5)
 
 
 # Cell-plots of n.hits, first.hit, obj
@@ -53,7 +58,7 @@ dfs %>%
 union_string = function(...) {
   args = unlist(list(...))
   args = sapply(args, function(e) gsub(" ", "_", e))
-  print(args)
+  #print(args)
   re::collapse(args, sep = "_")
 }
 
@@ -62,24 +67,34 @@ generate_plots = function(df) {
   df = separate(df, feature.values, into = feat.names, convert = TRUE, sep = ",")
   g1 = ggplot(df, aes_string(x = feat.names[1L], y = feat.names[2L], fill = "obj")) + geom_tile()
   g1 = g1 + facet_grid(. ~ evolver)
-  fn = sprintf("%s/%s_objective.pdf", plot.dir, union_string(df$algo.pair[1L], feat.names[1], feat.names[2]))
-  ggsave(fn, plot = g1, width = 12, height = 2.5)
+  fn = sprintf("%s/%s_objective.pdf", plot.dir, union_string(df$collection[1], df$algo.pair[1L], feat.names[1], feat.names[2]))
+  ggsave(fn, plot = g1, width = 12, height = 4)
 
   g1 = ggplot(df, aes_string(x = feat.names[1L], y = feat.names[2L], fill = "n.hits")) + geom_tile()
   g1 = g1 + facet_grid(. ~ evolver)
-  fn = sprintf("%s/%s_nhits.pdf", plot.dir, union_string(df$algo.pair[1L], feat.names[1], feat.names[2]))
-  ggsave(fn, plot = g1, width = 12, height = 2.5)
+  nhits_breaks = c(100, 250, 500, 1000, 2500, 5000)
+  g1 = g1 + scale_fill_gradient(name = "Log nr. of hits", trans = "log", breaks = nhits_breaks, labels = nhits_breaks)
+  fn = sprintf("%s/%s_nhits.pdf", plot.dir, union_string(df$collection[1], df$algo.pair[1L], feat.names[1], feat.names[2]))
+  ggsave(fn, plot = g1, width = 12, height = 4)
 
   g1 = ggplot(df, aes_string(x = feat.names[1L], y = feat.names[2L], fill = "first.hit")) + geom_tile()
   g1 = g1 + facet_grid(. ~ evolver)
-  fn = sprintf("%s/%s_firsthit.pdf", plot.dir, union_string(df$algo.pair[1L], feat.names[1], feat.names[2]))
-  ggsave(fn, plot = g1, width = 12, height = 2.5)
+  fn = sprintf("%s/%s_firsthit.pdf", plot.dir, union_string(df$collection[1], df$algo.pair[1L], feat.names[1], feat.names[2]))
+  ggsave(fn, plot = g1, width = 12, height = 4)
+
+  g1 = ggplot(df, aes_string(x = "evolver", y = "obj", fill = "evolver")) + geom_boxplot(alpha = 0.5)
+  g1 = g1 + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  g1 = g1 + scale_fill_brewer(pallette = "Dark2")
+  fn = sprintf("%s/%s_objective_boxplots.pdf", plot.dir, union_string(df$collection[1], df$algo.pair[1L], feat.names[1], feat.names[2]))
+  ggsave(fn, plot = g1, width = 4, height = 4)
   #BBmisc::pause()
 }
 
 dfs %>%
-  group_by(target, algo.pair, feature.names) %>%
+  group_by(target, algo.pair, feature.names, collection) %>%
   dplyr::do(generate_plots(.))
+
+print("Hallo")
 
 #dd = filter(dfs, algo.pair == "NI vs. FI", evolver == "QD [all]")
 #generate_plots(dd)

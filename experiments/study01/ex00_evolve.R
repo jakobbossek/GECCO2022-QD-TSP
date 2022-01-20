@@ -56,6 +56,11 @@ batchtools::addAlgorithm("QDEVOLVE", fun = function(job, data, ...) runner(job, 
 
 # Design
 design = data.table::as.data.table(read.table("design.csv", header = TRUE, sep = " "))
+
+design.cheap = data.table::CJ(
+
+)
+
 algo.designs = list(QDEVOLVE = design)
 
 batchtools::addExperiments(algo.designs = algo.designs, repls = 1L)
@@ -78,7 +83,6 @@ qplot(nng_5_n_strong, mst_depth_median, color = obj, data = res)
 qplot(nng_5_n_strong, mst_depth_median, fill = obj, data = res, geom = "tile")
 
 # # COLLECT
-#jt = unwrap(getJobTable()[, c("job.id", "algo.pars")])
 res = reduceResultsList(findDone())
 saveRDS(res, file = "../data/study01_data.rds")
 jt = unwrap(getJobTable()[, c("job.id", "repl", "algo.pars")])

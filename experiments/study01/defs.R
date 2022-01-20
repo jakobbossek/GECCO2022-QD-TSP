@@ -1,15 +1,16 @@
 DATA.DIR = "../data/study01/results"
 STORAGE.DIR = "../qdstorage/study01/storage"
-MAX.TIME = Inf #60 * 60 * 24 * 2 # 48h
-MAX.EVALS =  5000L
-CUTOFF.TIME = 60 * 3 # 3m
-REPLS = 3L # number of runs for stochastic algorithms
+MAX.TIME = 10 #60 * 60 * 24 * 2 # 48h
+MAX.EVALS =  100 #5000L
+LOG.EVERY = list("cheap" = 10, "expensive" = 10)
+CUTOFF.TIME = 2 #60 * 3 # 3m
+REPLS = 2L # number of runs for stochastic algorithms
 
 ALGO.PARS = list(
   "nearest_insertion" = list(),
   "farthest_insertion" = list(),
-  "eax" = list(with.restarts = TRUE),
-  "lkh" = list(with.restarts = TRUE, max.trials = 1e8)
+  "eax" = list(with.restarts = TRUE, log.trajectory = FALSE),
+  "lkh" = list(with.restarts = TRUE, max.trials = 1e8, log.trajectory = FALSE)
 )
 
 # TSP SOLVERS
@@ -30,6 +31,7 @@ salesperson::solverPaths(as.list(SOLVER.PATH))
 
 
 getPARscore = function(times, cutoff = 3600, f = 10, ...) {
+  print(times)
   checkmate::assertNumeric(times, lower = 0, any.missing = FALSE, all.missing = FALSE)
   checkmate::assertNumber(cutoff, lower = 1)
   checkmate::assertNumber(f, lower = 1)
@@ -83,10 +85,12 @@ make_mutator_collection = function(name) {
 #  Cutoff time in seconds. Defaults to 3 (for testing purposes).
 # @return [numeric(1)] Single numeric objective.
 make_objective_fun = function(algo.a, algo.b, algo.pars.a = list(), algo.pars.b = list(),
-  target, aggr.fun = base::mean, repls = 3L, cutoff.time = 3L) {
+  target, aggr.fun = base::mean, repls = 5L, cutoff.time = 3L) {
   force(algo.a)
   force(algo.b)
   force(target)
+  force(algo.pars.a)
+  force(algo.pars.b)
   force(aggr.fun)
   force(repls)
   force(cutoff.time)
@@ -110,7 +114,8 @@ make_objective_fun = function(algo.a, algo.b, algo.pars.a = list(), algo.pars.b 
 
     # need optimale tour length for PAR-score
     if (target != "tour.length") {
-      opt = runSolver("concorde", instance = x)$tour.length
+      #opt = runSolver("concorde", instance = x)$tour.length
+      opt = as.integer(900000000)
       algo.pars.a$opt.tour.length = opt
       algo.pars.b$opt.tour.length = opt
     }
@@ -118,7 +123,7 @@ make_objective_fun = function(algo.a, algo.b, algo.pars.a = list(), algo.pars.b 
     res.a = runAlgorihm(x, algo.a, algo.pars.a, repls.a)
     res.b = runAlgorihm(x, algo.b, algo.pars.b, repls.b)
 
-    return(list(algo.a =res.a, algo.b = res.b, obj = res.a / res.b))
+    return(list(algo.a = res.a, algo.b = res.b, obj = res.a / res.b))
   }
 }
 
@@ -136,6 +141,11 @@ runner = function(job, data, ...) {
   feat.fun = make_feature_fun(feats.of.interest)
   collection = make_mutator_collection(args$collection)
 
+  # Depending on setting (easy heuristics vs. state-of-the-art) we log
+  # at different points in time
+  setting = if (args$algo.a %in% c("eax", "lkh")) "expensive" else "cheap"
+  log.every = LOG.EVERY[[setting]]
+
   # storage
   storage = file.path(STORAGE.DIR, sprintf("%i", job$job.id))
   if (!dir.exists(storage))
@@ -149,8 +159,9 @@ runner = function(job, data, ...) {
     feats.of.interest = feats.of.interest,
     n = args$n,
     mu = args$mu, # NOTE: ignored by QD-algorithm
-    max.evals = MAX.EVALS,
-    max.time = MAX.TIME,
+    max.evals = if (setting == "cheap") MAX.EVALS else Inf,
+    max.time = if (setting == "expensive") MAX.TIME else Inf,
+    log.every = log.every,
     storage.path = storage,
     collection = collection)
   res$job.id = job$job.id
