@@ -1,14 +1,17 @@
-DATA.DIR = "../data/study01/results"
-STORAGE.DIR = "../qdstorage/study01/storage"
-MAX.TIME = 10 #60 * 60 * 24 * 2 # 48h
-MAX.EVALS =  100 #5000L
-LOG.EVERY = list("cheap" = 10, "expensive" = 10)
-CUTOFF.TIME = 2 #60 * 3 # 3m
-REPLS = 2L # number of runs for stochastic algorithms
+DATA.DIR = "study01/data/"
+STORAGE.DIR = "study01/instances"
+
+DATA.DIR = "/scratch/tmp/bossek/tsp-QD-evolve/study1/data"
+STORAGE.DIR = "/scratch/tmp/bossek/tsp-QD-evolve/study1/instances"
+
+MAX.TIME = 60 * 60 * 46
+MAX.EVALS =  100000L #5000L
+LOG.EVERY = 500
+CUTOFF.TIME = 60 * 3 # 3m
+RUNS = 10L
+REPLS = 3L # number of runs for stochastic algorithms
 
 ALGO.PARS = list(
-  "nearest_insertion" = list(),
-  "farthest_insertion" = list(),
   "eax" = list(with.restarts = TRUE, log.trajectory = FALSE),
   "lkh" = list(with.restarts = TRUE, max.trials = 1e8, log.trajectory = FALSE)
 )
@@ -31,7 +34,7 @@ salesperson::solverPaths(as.list(SOLVER.PATH))
 
 
 getPARscore = function(times, cutoff = 3600, f = 10, ...) {
-  print(times)
+  #print(times)
   checkmate::assertNumeric(times, lower = 0, any.missing = FALSE, all.missing = FALSE)
   checkmate::assertNumber(cutoff, lower = 1)
   checkmate::assertNumber(f, lower = 1)
@@ -114,8 +117,11 @@ make_objective_fun = function(algo.a, algo.b, algo.pars.a = list(), algo.pars.b 
 
     # need optimale tour length for PAR-score
     if (target != "tour.length") {
-      #opt = runSolver("concorde", instance = x)$tour.length
-      opt = as.integer(900000000)
+      opt = runSolver("concorde", instance = x, solver.pars = list(cutoff.time = 60 * 5))$tour.length
+      if (is.null(opt)) {
+        return(list(algo.a = NA, algo.b = NA, obj = 1e10)) # NOTE: we minimize the objective. Hence, this won't be accepted
+      }
+      #opt = as.integer(900000000)
       algo.pars.a$opt.tour.length = opt
       algo.pars.b$opt.tour.length = opt
     }
@@ -141,11 +147,6 @@ runner = function(job, data, ...) {
   feat.fun = make_feature_fun(feats.of.interest)
   collection = make_mutator_collection(args$collection)
 
-  # Depending on setting (easy heuristics vs. state-of-the-art) we log
-  # at different points in time
-  setting = if (args$algo.a %in% c("eax", "lkh")) "expensive" else "cheap"
-  log.every = LOG.EVERY[[setting]]
-
   # storage
   storage = file.path(STORAGE.DIR, sprintf("%i", job$job.id))
   if (!dir.exists(storage))
@@ -159,13 +160,13 @@ runner = function(job, data, ...) {
     feats.of.interest = feats.of.interest,
     n = args$n,
     mu = args$mu, # NOTE: ignored by QD-algorithm
-    max.evals = if (setting == "cheap") MAX.EVALS else Inf,
-    max.time = if (setting == "expensive") MAX.TIME else Inf,
-    log.every = log.every,
+    max.evals = Inf,
+    max.time = MAX.TIME,
+    log.every = LOG.EVERY,
     storage.path = storage,
     collection = collection)
   res$job.id = job$job.id
 
-  saveRDS(res, file = file.path(DATA.DIR, sprintf("EVOLVE_%i.rds", job$job.id)))
+  #saveRDS(res, file = file.path(DATA.DIR, sprintf("EVOLVE_%i.rds", job$job.id)))
   return(list(res = res, job = job))
 }

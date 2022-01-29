@@ -23,6 +23,8 @@
 #'   solver runs.
 #' @param max.time [integer(1)]\cr
 #'   Maximum time (in seconds).
+#' @param log.every [integer(1)]\cr
+#'   If not \code{NULL} the snapshot is taken every \code{log.every} iterations.
 #'   Default is \code{Inf} (i.e., no time limit).
 #' @param storage.path [character]\cr
 #'   Path to folder where the algorithm should outsource generated instances
@@ -46,6 +48,7 @@ ea = function(
   n, mu = 1L,
   feats.of.interest = NULL,
   max.evals = 10L, max.time = Inf,
+  log.every = NULL,
   storage.path = "qdstorage",
   collection = tspgen::init("sophisticated"), boundary.handling = "uniform",
   ...) {
@@ -58,6 +61,9 @@ ea = function(
   n.feats = length(feats.of.interest)
   time.started = proc.time()[3L]
   n.evals = 1
+  n.replaces = 1
+
+  res = data.frame()
 
   updateStorage = function(coords) {
     x = netgen::makeNetwork(coords, name = "Dummy")
@@ -76,7 +82,8 @@ ea = function(
       # just add new entry
       n.keys <<- n.keys + 1L
       storage[key] = makeRecord(x, id = n.keys, n.evals, feats, feats.of.interest, obj, storage.path)
-      n.evals <<- n.evals + 1L
+      # BUG? Why do we do it here? The algorithm has than max.evals - n.keys iteration in total?
+      #n.evals <<- n.evals + 1L
     } else {
       storage[key] = updateRecord(storage[key][[1]], x, feats, obj, storage.path)
     }
@@ -88,20 +95,36 @@ ea = function(
   objs = sapply(P, updateStorage)
 
   repeat {
-    catf("Evaluations %i", n.evals)
+    # catf("Evaluations %i", n.evals)
 
     # get random solution
     parent.idx = sample(seq_len(mu), 1L)
     coords = P[[parent.idx]]
 
     # mutate coordinates
-    coords.new = applyRandomMutation(collection, coords, boundary.handling)
+    coords.new = tspgen:::applyRandomMutation(collection, coords, boundary.handling)
     obj.new = updateStorage(coords.new)
 
-    if (obj.new < objs[parent.idx]) {
+    if (obj.new <= objs[parent.idx]) {
       P[[parent.idx]] = coords.new
       objs[parent.idx] = obj.new
+      n.replaces = n.replaces + 1L
     }
+
+    if (!is.null(log.every)) {
+      if (length(log.every) == 1) {
+        if (((n.evals %% log.every) == 0) & (n.evals != max.evals)) {
+        catf("logging in iter: %i", n.evals)
+          res = rbind(res, reduceResults(storage, n.evals, n.replaces))
+        }
+      } else {
+        if (((n.evals %in% log.every)) & (n.evals != max.evals)) {
+        catf("logging in iter: %i", n.evals)
+          res = rbind(res, reduceResults(storage, n.evals, n.replaces))
+        }
+      }
+    }
+
 
     # termination coniditons
     time.passed = as.numeric(proc.time()[3L] - time.started)
@@ -111,7 +134,7 @@ ea = function(
     n.evals = n.evals + 1L
   }
 
-  reduceResults(storage, feats.of.interest)
+  rbind(res, reduceResults(storage, n.evals, n.replaces))
 }
 
 
@@ -140,6 +163,8 @@ ea = function(
 #' @param max.time [integer(1)]\cr
 #'   Maximum time (in seconds).
 #'   Default is \code{Inf} (i.e., no time limit).
+#' @param log.every [integer(1)]\cr
+#'   If not \code{NULL} the snapshot is taken every \code{log.every} iterations.
 #' @param storage.path [character]\cr
 #'   Path to folder where the algorithm should outsource generated instances
 #'   (they are not kept in-memory due to the high number).
@@ -161,6 +186,7 @@ qd = function(
   obj.fun, feat.fun,
   n, feats.of.interest = NULL,
   max.evals = 10L, max.time = Inf,
+  log.every = NULL,
   storage.path = "qdstorage",
   collection = tspgen::init("sophisticated"), boundary.handling = "uniform",
   ...) {
@@ -174,8 +200,10 @@ qd = function(
   n.feats = length(feats.of.interest)
   time.started = proc.time()[3L]
 
+  res = data.frame()
+
   repeat {
-    catf("Evaluations %i\n", n.evals)
+    # catf("Evaluations %i\n", n.evals)
 
     # get random solution
     keys = datastructures::keys(storage)
@@ -187,7 +215,7 @@ qd = function(
     }
 
     # mutate coordinates
-    coords.new = applyRandomMutation(collection, coords, boundary.handling)
+    coords.new = tspgen:::applyRandomMutation(collection, coords, boundary.handling)
     x = netgen::makeNetwork(coords.new, name = "Dummy")
     x.calc =  netgen::makeNetwork(coords.new * scale.factor, name = "Dummy") # for calculations we scale up
 
@@ -208,6 +236,20 @@ qd = function(
       storage[key.new] = updateRecord(storage[key.new][[1]], x, feats.new, obj.new, storage.path)
     }
 
+    if (!is.null(log.every)) {
+      if (length(log.every) == 1) {
+        if (((n.evals %% log.every) == 0) & (n.evals != max.evals)) {
+        catf("logging in iter: %i", n.evals)
+          res = rbind(res, reduceResults(storage, n.evals))
+        }
+      } else {
+        if (((n.evals %in% log.every)) & (n.evals != max.evals)) {
+        catf("logging in iter: %i", n.evals)
+          res = rbind(res, reduceResults(storage, n.evals))
+        }
+      }
+    }
+
     # termination coniditons
     time.passed = as.numeric(proc.time()[3L] - time.started)
     if ((n.evals >= max.evals) | (time.passed > max.time)) {
@@ -216,7 +258,7 @@ qd = function(
     n.evals = n.evals + 1L
   }
 
-  reduceResults(storage, feats.of.interest)
+  rbind(res, reduceResults(storage, n.evals))
 }
 
 makeRecord = function(instance, id, iter, feats, feats.of.interest, obj.new, storage.path) {
@@ -250,11 +292,13 @@ updateRecord = function(record, instance, feats, obj.new, storage.path) {
   record.new
 }
 
-reduceResults = function(storage, feats.of.interest) {
+reduceResults = function(storage, n.evals, n.replaces = NA) {
   keys = datastructures::keys(storage)
   res = as.data.frame(
     do.call(rbind, lapply(keys, function(key) {
       as.data.frame(storage[key][[1L]])
     })))
+  res$n.evals = n.evals
+  res$n.replaces = n.replaces
   return(res)
 }

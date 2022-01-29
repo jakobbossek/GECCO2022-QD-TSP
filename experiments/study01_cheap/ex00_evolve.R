@@ -24,22 +24,12 @@ source("../src/utils.R")
 # Take subsets of 2 or 3 of the following (see FOGA2019 and FOGA2021 TSP papers for justification of the choice):
 # * nng_5_n_strong
 # * mst_depth_median
-# * nng_5_strong_weak_ratio
+# * nng_3_strong_components_max
+# * nng_3_n_weak
 
-# STUDY 2 (optional)
-# ===
-# Extend algorithm, such that in each "cell" we can store two instances (the
-# first easy for A and harder for B and the other the other way around).
-
-# TODOS
-# ===
-# * BUG: storage is empty after QD run
-# * Algorithm maximizes at the moment! Should minimize for consistency reasons with older papers?
-# * Prepare everything on my WISTAT PC
-# * Update algorithm to handle both directions simultaneously
 
 # ATTENTION!
-file.dir = "bt-qd-evolve"
+file.dir = "/scratch/tmp/bossek/tsp-QD-evolve/study01_cheap/bt-qd-evolve"
 unlink(file.dir, recursive = TRUE, force = TRUE)
 
 reg = batchtools::makeExperimentRegistry(
@@ -47,7 +37,7 @@ reg = batchtools::makeExperimentRegistry(
   seed = 1L,
   packages = c("tspgen", "salesperson"),
   source = c("../src/algorithms.R", "defs.R", "../src/utils.R"))
-reg$cluster.functions = batchtools::makeClusterFunctionsMulticore(ncpus = 8L, fs.latency = 0)
+#reg$cluster.functions = batchtools::makeClusterFunctionsMulticore(ncpus = 8L, fs.latency = 0)
 
 # no problem at all
 batchtools::addProblem("DUMMY", data = list())
@@ -57,18 +47,16 @@ batchtools::addAlgorithm("QDEVOLVE", fun = function(job, data, ...) runner(job, 
 # Design
 design = data.table::as.data.table(read.table("design.csv", header = TRUE, sep = " "))
 
-design.cheap = data.table::CJ(
-
-)
 
 algo.designs = list(QDEVOLVE = design)
 
-batchtools::addExperiments(algo.designs = algo.designs, repls = 1L)
+batchtools::addExperiments(algo.designs = algo.designs, repls = RUNS)
 
 BBmisc::stopf("Registry successfully generated! :-)")
 
 ids = findNotDone()
-submitJobs(ids = ids)
+
+submitJobs(ids = ids, resources = list(walltime = 60 * 60 * 32, mem = 4000))
 
 stop()
 
@@ -76,14 +64,9 @@ stop()
 # ===
 res = testJob(1)
 # Obs.: some areas hit moreoften -> weakness of mutation operators
-qplot(nng_5_n_strong, mst_depth_median, color = n.hits, data = res)
-qplot(nng_5_n_strong, mst_depth_median, fill = n.hits, data = res, geom = "tile")
-# Obs.: manage to identify solutions where B outperform A
-qplot(nng_5_n_strong, mst_depth_median, color = obj, data = res)
-qplot(nng_5_n_strong, mst_depth_median, fill = obj, data = res, geom = "tile")
 
 # # COLLECT
 res = reduceResultsList(findDone())
-saveRDS(res, file = "../data/study01_data.rds")
+saveRDS(res, file = file.path(DATA.DIR, "study02_data.rds"))
 jt = unwrap(getJobTable()[, c("job.id", "repl", "algo.pars")])
-saveRDS(jt, file = "../data/study01_jt.rds")
+saveRDS(jt, file = file.path(DATA.DIR, "study02_jt.rds"))

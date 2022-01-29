@@ -1,0 +1,13 @@
+method algo.a algo.b n target feats collection mu
+qd "eax" "lkh" 500 "runtime" "nng_5_n_strong,mst_depth_median" simple 1
+qd "lkh" "eax" 500 "runtime" "nng_5_n_strong,mst_depth_median" simple 1
+qd "eax" "lkh" 500 "runtime" "nng_5_n_strong,mst_depth_median" all 1
+qd "lkh" "eax" 500 "runtime" "nng_5_n_strong,mst_depth_median" all 1
+ea "eax" "lkh" 500 "runtime" "nng_5_n_strong,mst_depth_median" simple 1
+ea "lkh" "eax" 500 "runtime" "nng_5_n_strong,mst_depth_median" simple 1
+ea "eax" "lkh" 500 "runtime" "nng_5_n_strong,mst_depth_median" all 1
+ea "lkh" "eax" 500 "runtime" "nng_5_n_strong,mst_depth_median" all 1
+ea "eax" "lkh" 500 "runtime" "nng_5_n_strong,mst_depth_median" simple 50
+ea "lkh" "eax" 500 "runtime" "nng_5_n_strong,mst_depth_median" simple 50
+ea "eax" "lkh" 500 "runtime" "nng_5_n_strong,mst_depth_median" all 50
+ea "lkh" "eax" 500 "runtime" "nng_5_n_strong,mst_depth_median" all 50
