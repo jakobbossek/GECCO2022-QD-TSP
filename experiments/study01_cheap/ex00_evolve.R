@@ -67,6 +67,6 @@ res = testJob(1)
 
 # # COLLECT
 res = reduceResultsList(findDone())
-saveRDS(res, file = file.path(DATA.DIR, "study02_data.rds"))
+saveRDS(res, file = file.path(DATA.DIR, "study01_cheap_data.rds"))
 jt = unwrap(getJobTable()[, c("job.id", "repl", "algo.pars")])
-saveRDS(jt, file = file.path(DATA.DIR, "study02_jt.rds"))
+saveRDS(jt, file = file.path(DATA.DIR, "study01_cheap_jt.rds"))

@@ -1,13 +1,12 @@
-DATA.DIR = "study01/data/"
-STORAGE.DIR = "study01/instances"
+DATA.DIR = "study02_expensive/data/"
+STORAGE.DIR = "study02_expensive/instances"
 
-DATA.DIR = "/scratch/tmp/bossek/tsp-QD-evolve/study1/data"
-STORAGE.DIR = "/scratch/tmp/bossek/tsp-QD-evolve/study1/instances"
+DATA.DIR = "/scratch/tmp/bossek/tsp-QD-evolve/study02_expensive/data"
+STORAGE.DIR = "/scratch/tmp/bossek/tsp-QD-evolve/study02_expensive/instances"
 
-MAX.TIME = 60 * 60 * 46
-MAX.EVALS =  100000L #5000L
-LOG.EVERY = 500
-CUTOFF.TIME = 60 * 3 # 3m
+MAX.TIME = 60 * 60 * 40
+LOG.EVERY = 100
+CUTOFF.TIME = 60L * 5L # 3m
 RUNS = 10L
 REPLS = 3L # number of runs for stochastic algorithms
 

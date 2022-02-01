@@ -3,33 +3,8 @@ library(batchtools)
 source("defs.R")
 source("../src/utils.R")
 
-# STUDY 1
-# ===
-# WHAT WE WANT:
-# For fixed number of cities n and a pair of algorithms (A, B), evolve instances
-# (the QD way) such that each cell contains at most one instance which is easy for
-# A and harder for B.
-#
-# COMBINATIONS OF ALGORITHMS:
-# ===
-# Focus on solution quality:
-# * Nearest-neighbor vs. farthest neighbor (and the other way around)
-# * Nearest-neighbor vs. concorde (i.e., vs. optimality)
-#
-# Focus on runtime until OPT is found:
-# * EAX vs. LKH (and the other way around)
-#
-# COMBINATIONS OF FEATURES
-# ===
-# Take subsets of 2 or 3 of the following (see FOGA2019 and FOGA2021 TSP papers for justification of the choice):
-# * nng_5_n_strong
-# * mst_depth_median
-# * nng_3_strong_components_max
-# * nng_3_n_weak
-
-
 # ATTENTION!
-file.dir = "bt-qd-evolve"
+file.dir = "/scratch/tmp/bossek/tsp-QD-evolve/study02_expensive/bt-qd-evolve"
 unlink(file.dir, recursive = TRUE, force = TRUE)
 
 reg = batchtools::makeExperimentRegistry(
@@ -47,7 +22,6 @@ batchtools::addAlgorithm("QDEVOLVE", fun = function(job, data, ...) runner(job, 
 # Design
 design = data.table::as.data.table(read.table("design.csv", header = TRUE, sep = " "))
 
-
 algo.designs = list(QDEVOLVE = design)
 
 batchtools::addExperiments(algo.designs = algo.designs, repls = RUNS)
@@ -55,12 +29,6 @@ batchtools::addExperiments(algo.designs = algo.designs, repls = RUNS)
 BBmisc::stopf("Registry successfully generated! :-)")
 
 ids = findNotDone()
-ids = findExperiments(algo.pars = (target == "tour.length"))
-
-submitJobs(ids = ids, resources = list(walltime = 60 * 60 * 10, mem = 4000))
-
-ids = findExperiments(algo.pars = (target == "runtime"))
-
 submitJobs(ids = ids, resources = list(walltime = 60 * 60 * 48, mem = 4000))
 
 stop()
