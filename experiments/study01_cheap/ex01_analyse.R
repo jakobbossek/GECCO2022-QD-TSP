@@ -75,7 +75,7 @@ g = g + labs(color = "Algorithm", shape = "Algorithm", x = "Number of hits [log-
 g = g + facet_grid(algo.pair ~ feature.names)
 g = g + scale_x_log10()
 g
-ggsave(file.path(plot.dir, "FI_NI_scatterplot_nhits_vs_obj.pdf"), plot = g, width = 10, height = 4)
+ggsave(file.path(plot.dir, "FI_NI_scatterplot_nhits_vs_obj.pdf"), plot = g, width = 7.5, height = 4)
 
 
 # Q: How many cells are covered (i.e., how many instances are produced?)
@@ -109,26 +109,6 @@ dfs.tl.instances = dfs %>%
 tmp = dfs.tl.instances %>%
   filter(n.evals %in% c(10000, 50000, 100000, seq(200000, 1e6, by = 200000)))
 
-breaks = unique(tmp$n.evals)
-format.fun = scales::label_number(big.mark = ",")
-# plot the development of the number of instances over time
-g = ggplot(tmp, aes(x = as.factor(n.evals), y = n, fill = evolver, color = evolver))
-g = g + geom_boxplot(alpha = 0.5)
-g = g + geom_jitter(alpha = 0.3, shape = 4)
-g = g + scale_fill_brewer(palette = "Dark2")
-g = g + scale_color_brewer(palette = "Dark2")
-g = g + theme(legend.position = "top")
-g = g + scale_x_discrete(breaks = breaks, labels = format.fun(breaks))
-g = g + labs(
-  x = "Iteration",
-  y = "Number of covered cells\n(I.e., number of different instances)",
-  fill = "Algorithm",
-  color = "Algorithm")
-g = g + facet_grid(feature.names ~ algo.pair, scale = "free_y")
-#g
-ggsave(file.path(plot.dir, "nr_of_instances_over_time_all.pdf"), plot = g, width = 10, height = 8)
-
-stop()
 # NOW LINE PLOTS WITH ERRORBARS
 # ===
 tmp = dfs.tl.instances %>%
@@ -136,23 +116,11 @@ tmp = dfs.tl.instances %>%
   dplyr::summarize(n.mean = mean(n), n.sd = sd(n)) %>%
   ungroup()
 
-plot_progress = function(tmp) {
-  g = ggplot(tmp, aes(x = n.evals, y = n.mean, color = evolver, shape = evolver))
-  g = g + geom_line(aes(group = evolver))
-  g = g + geom_point()
-  g = g + geom_errorbar(aes(ymin = n.mean - n.sd, ymax = n.mean + n.sd), width = 100)
-  g = g + scale_color_brewer(palette = "Dark2")
-  g = g + theme(legend.position = "top")
-  g = g + scale_y_continuous()
-  g = g + guides(shape = guide_legend(nrow = 1), color = guide_legend(nrow = 1))
-  g = g + labs(
-    x = "Iteration",
-    y = "Number of covered cells\n(I.e., number of different instances)",
-    color = "Algorithm",
-    shape = "Algorithm")
-  g = g + facet_grid(feature.names ~ algo.pair, scales = "free_y")
-  return(g)
-}
+g = plot_progress(tmp)
+g = g + guides(shape = guide_legend(nrow = 2), color = guide_legend(nrow = 2))
+
+ggsave(file.path(plot.dir, "nr_of_instances_over_time.pdf"), plot = g, width = 8, height = 6.7)
+#stop()
 
 dfg = filter(tmp, grepl("mst", feature.names))
 g = plot_progress(dfg)
@@ -175,7 +143,7 @@ tmp = dfs.tl.features.final %>%
 g = plot_tiles(tmp, objective.description = "Tour length ratio")
 g = g +  scale_fill_continuous(breaks = seq(0.5, 1.3, by = 0.1), limits = c(0.5, 1.3))
 g = g + labs(title = "FI vs. NI")
-ggsave(file.path(plot.dir, "FI_NI_nng5_mst_tile_obj.pdf"), plot = g, width = 10, height = 9)
+ggsave(file.path(plot.dir, "FI_NI_nng5_mst_tile_obj.pdf"), plot = g, width = 8.5, height = 7.5)
 
 
 tmp = dfs.tl.features.final %>%
@@ -184,7 +152,7 @@ tmp = dfs.tl.features.final %>%
 g = plot_tiles(tmp, objective.description = "Tour length ratio")
 g = g +  scale_fill_continuous(breaks = seq(0.5, 1.3, by = 0.1), limits = c(0.5, 1.3))
 g = g + labs(title = "NI vs. FI")
-ggsave(file.path(plot.dir, "NI_FI_nng5_mst_tile_obj.pdf"), plot = g, width = 10, height = 9)
+ggsave(file.path(plot.dir, "NI_FI_nng5_mst_tile_obj.pdf"), plot = g, width = 8.5, height = 7.5)
 
 tmp = dfs.tl.features.final %>%
   filter(algo.pair == "FI vs. NI", feature.names == "nng_3_strong_components_max,nng_3_n_weak", repl == 1)
@@ -192,7 +160,7 @@ tmp = dfs.tl.features.final %>%
 g = plot_tiles(tmp, objective.description = "Tour length ratio")
 g = g +  scale_fill_continuous(breaks = seq(0.5, 1.3, by = 0.1), limits = c(0.5, 1.3))
 g = g + labs(title = "FI vs. NI")
-ggsave(file.path(plot.dir, "FI_NI_nng3_nng3_tile_obj.pdf"), plot = g, width = 10, height = 9)
+ggsave(file.path(plot.dir, "FI_NI_nng3_nng3_tile_obj.pdf"), plot = g, width = 8.5, height = 7.5)
 
 tmp = dfs.tl.features.final %>%
   filter(algo.pair == "NI vs. FI", feature.names == "nng_3_strong_components_max,nng_3_n_weak", repl == 1)
@@ -200,7 +168,7 @@ tmp = dfs.tl.features.final %>%
 g = plot_tiles(tmp, objective.description = "Tour length ratio")
 g = g +  scale_fill_continuous(breaks = seq(0.5, 1.3, by = 0.1), limits = c(0.5, 1.3))
 g = g + labs(title = "NI vs. FI")
-ggsave(file.path(plot.dir, "NI_FI_nng3_nng3_tile_obj.pdf"), plot = g, width = 10, height = 9)
+ggsave(file.path(plot.dir, "NI_FI_nng3_nng3_tile_obj.pdf"), plot = g, width = 8.5, height = 7.5)
 
 
 # NUMBER OF HITS / UPDATES
@@ -215,33 +183,60 @@ g = plot_tiles(tmp, "n.updates", objective.description = "Number of updates", ad
 #g = g + scale_fill_continuous(breaks = seq(0.5, 1.3, by = 0.1), limits = c(0.5, 1.3))
 g = g + labs(title = "FI vs. NI", fill = "Number of updates")
 g = g + facet_wrap(. ~ evolver)
-ggsave(file.path(plot.dir, "FI_NI_nng5_mst_tile_nupdates.pdf"), plot = g, width = 10, height = 4)
+ggsave(file.path(plot.dir, "FI_NI_nng5_mst_tile_nupdates.pdf"), plot = g, width = 8.5, height = 4)
 
 g = plot_tiles(tmp, "first.hit", objective.description = "Number of updates", add.initial.population = FALSE)
 #g = g + scale_fill_gradient(trans = "log")
 #g = g + scale_fill_continuous(breaks = seq(0.5, 1.3, by = 0.1), limits = c(0.5, 1.3))
 g = g + labs(title = "FI vs. NI", fill = "First hitting time")
 g = g + facet_wrap(. ~ evolver)
-ggsave(file.path(plot.dir, "FI_NI_nng5_mst_tile_firsthit.pdf"), plot = g, width = 10, height = 4)
+ggsave(file.path(plot.dir, "FI_NI_nng5_mst_tile_firsthit.pdf"), plot = g, width = 8.5, height = 4)
 
 
 
 tmp = dfs.tl.features.final
-tmp.aggr = tmp %>%
+dd = tmp %>%
   group_by(feature.names, algo.pair, evolver, repl) %>%
   dplyr::summarize(n.instances = n(), n.instances.median = sum(obj <= median(obj)), max.updates = max(n.updates), max.hits = max(n.hits), best.obj = min(obj), median.obj = median(obj)) %>%
   group_by(feature.names, algo.pair, evolver) %>%
   dplyr::summarize(n.mean = mean(n.instances), sd = sd(n.instances), n.instances.median = median(n.instances.median), max.updates = max(max.updates), max.hits = max(max.hits), best.obj = min(best.obj), median.obj = median(median.obj)) %>%
-  ungroup()
+  ungroup() %>%
+  arrange(feature.names, algo.pair, evolver)
 
 load_all("~/repos/software/r/tblutils/")
 
-tmp.aggr.wide = tblutils::widen(tmp.aggr, split.col = "algo.pair", widen.cols = setdiff(colnames(tmp.aggr), c("algo.pair", ""))
+split.by = c("feature.names", "algo.pair")
+dd = highlight(dd, split.by, "n.mean", order.fun = "max")
+dd = highlight(dd, split.by, "sd", order.fun = "min")
+dd = highlight(dd, split.by, "max.updates", order.fun = "max")
+dd = highlight(dd, split.by, "best.obj", order.fun = "min")
+dd = highlight(dd, split.by, "max.hits", order.fun = "max")
+dd = highlight(dd, split.by, "median.obj", order.fun = "min")
+dd = highlight(dd, split.by, "n.instances.median", order.fun = "max")
+
+dd = tblutils::widen(dd, split.col = "algo.pair", widen.cols = setdiff(colnames(dd), c("algo.pair", "feature.names", "evolver")))
+dd$feature.names[grepl("nng_3_strong", dd$feature.names)] = "FC1"
+dd$feature.names[grepl("nng_5_n_strong", dd$feature.names)] = "FC2"
+dd$algo.pair = NULL
+dd
+
+
+#  row_spec(row = c(4, 8, 16, 20), extra_latex_after = "\\cline{2-11}")
+
+cns = c("\\textbf{FC}", "\\textbf{Algorithm}", rep(c("\\textbf{mean}", "\\textbf{std}", "<\\textbf{med}", "\\textbf{upd.}", "\\textbf{hits}", "\\textbf{best}", "\\textbf{median}"), 2))
+aln = c("l", "l", rep("r", 14))
+caption = "Table of different aggregated values of interest for the experiments on the simple insertion heuristics. Best values (for the statistics of covered cells or objective values) or maximal values (for cell update statistics are highlighted)."
+library(kableExtra)
+ddlat = kableExtra::kable(dd, "latex", col.names = cns, align = aln, booktabs = TRUE, label = "statistics_cheap", caption = caption, escape = FALSE) %>%
+  add_header_above(c(" " = 2, "\\textbf{Nr. of cells}" = 3, "\\textbf{Cell statistics}" = 2, "\\textbf{Objective}" = 2, "\\textbf{Nr. of cells}" = 3, "\\textbf{Cell statistics}" = 2, "\\textbf{Objective}" = 2), escape = FALSE) %>%
+  add_header_above(c(" " = 2, "\\textbf{FI vs. NI}" = 7, "\\textbf{NI vs. FI}" = 7), escape = FALSE) %>%
+  collapse_rows(columns = 1, latex_hline = "major", valign = "middle")
+
+cat(ddlat, file = "tables/cheap.tex")
 
 
 
-
-
+stop()
 
 
 
@@ -296,9 +291,9 @@ tmp$feature.names = gsub(",", "\nvs.\n", tmp$feature.names, fixed = TRUE)
 g = plot_objective(tmp, show.extras = TRUE)
 g = g + facet_grid(feature.names ~ algo.pair)
 g = g + theme(legend.position = "top")
-g = g + guides(color = guide_legend(nrow = 1))
+#g = g + guides(color = guide_legend(nrow = 1))
 g = g + labs(x = NULL, y = "Objective\n(tour length ratio)", color = "Algorithm")
-ggsave(file.path(plot.dir, "boxplot_objectives_by_features_and_algopair.pdf"), plot = g, width = 8, height = 10)
+ggsave(file.path(plot.dir, "boxplot_objectives_by_features_and_algopair.pdf"), plot = g, width = 8, height = 6.5)
 g
 
 

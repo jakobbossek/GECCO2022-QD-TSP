@@ -1,0 +1,38 @@
+\begin{table}
+
+\caption{\label{tab:statistics_cheap}Table of different aggregated values of interest for the experiments on the simple insertion heuristics. Best values (for the statistics of covered cells or objective values) or maximal values (for cell update statistics are highlighted).}
+\centering
+\begin{tabular}[t]{llrrrrrrrrrrrrrr}
+\toprule
+\multicolumn{2}{c}{ } & \multicolumn{7}{c}{textbf{FI vs. NI}} & \multicolumn{7}{c}{textbf{NI vs. FI}} \\
+\cmidrule(l{3pt}r{3pt}){3-9} \cmidrule(l{3pt}r{3pt}){10-16}
+\multicolumn{2}{c}{ } & \multicolumn{3}{c}{textbf{Nr. of cells}} & \multicolumn{2}{c}{textbf{Cell statistics}} & \multicolumn{2}{c}{textbf{Objective}} & \multicolumn{3}{c}{textbf{Nr. of cells}} & \multicolumn{2}{c}{textbf{Cell statistics}} & \multicolumn{2}{c}{textbf{Objective}} \\
+\cmidrule(l{3pt}r{3pt}){3-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9} \cmidrule(l{3pt}r{3pt}){10-12} \cmidrule(l{3pt}r{3pt}){13-14} \cmidrule(l{3pt}r{3pt}){15-16}
+\textbf{FC} & \textbf{Algorithm} & \textbf{mean} & \textbf{std} & <\textbf{med} & \textbf{upd.} & \textbf{hits} & \textbf{best} & \textbf{median} & \textbf{mean} & \textbf{std} & <\textbf{med} & \textbf{upd.} & \textbf{hits} & \textbf{best} & \textbf{median}\\
+\midrule
+ & (1+1) EA [all] & 395.50 & 58.06 & 206.00 & \cellcolor{gray!80}{\textbf{112.00}} & 150827.00 & 0.54 & 0.68 & 435.60 & 32.96 & 216.00 & 27.00 & 144718.00 & \cellcolor{gray!80}{\textbf{0.82}} & 0.98\\
+
+ & (1+1) EA [simple] & 409.90 & 35.43 & 207.50 & 72.00 & \cellcolor{gray!80}{\textbf{499050.00}} & 0.64 & 0.77 & 382.80 & 43.72 & 188.00 & \cellcolor{gray!80}{\textbf{38.00}} & \cellcolor{gray!80}{\textbf{327982.00}} & 0.85 & 1.00\\
+
+ & (50+1) EA [all] & 544.30 & 31.90 & 271.00 & 55.00 & 24733.00 & \cellcolor{gray!80}{\textbf{0.54}} & 0.70 & 515.50 & 18.86 & 260.00 & 26.00 & 23882.00 & 0.84 & 0.98\\
+
+ & (50+1) EA [simple] & 469.90 & 20.83 & 236.00 & 28.00 & 41937.00 & 0.69 & 0.77 & 478.70 & \cellcolor{gray!80}{\textbf{12.48}} & 241.00 & 24.00 & 42386.00 & 0.87 & 1.00\\
+
+ & QD [all] & \cellcolor{gray!80}{\textbf{1042.10}} & 25.63 & \cellcolor{gray!80}{\textbf{520.50}} & 73.00 & 4304.00 & 0.56 & \cellcolor{gray!80}{\textbf{0.65}} & \cellcolor{gray!80}{\textbf{1035.30}} & 19.92 & \cellcolor{gray!80}{\textbf{518.50}} & 26.00 & 4372.00 & 0.84 & \cellcolor{gray!80}{\textbf{0.94}}\\
+
+\multirow{-6}{*}{\raggedright\arraybackslash FC1} & QD [simple] & 917.30 & \cellcolor{gray!80}{\textbf{14.01}} & 458.50 & 35.00 & 4033.00 & 0.67 & 0.73 & 904.00 & 26.50 & 450.50 & 26.00 & 3794.00 & 0.88 & 0.96\\
+\cmidrule{1-16}
+ & (1+1) EA [all] & 769.90 & 297.31 & 412.00 & \cellcolor{gray!80}{\textbf{106.00}} & 147233.00 & \cellcolor{gray!80}{\textbf{0.53}} & 0.64 & 270.10 & 34.51 & 133.50 & 43.00 & 238896.00 & \cellcolor{gray!80}{\textbf{0.81}} & 1.00\\
+
+ & (1+1) EA [simple] & 147.20 & 34.54 & 70.50 & 81.00 & \cellcolor{gray!80}{\textbf{509185.00}} & 0.64 & 0.76 & 103.20 & 27.53 & 49.00 & \cellcolor{gray!80}{\textbf{55.00}} & \cellcolor{gray!80}{\textbf{526641.00}} & 0.81 & 1.02\\
+
+ & (50+1) EA [all] & 799.70 & 93.86 & 407.00 & 37.00 & 33528.00 & 0.55 & 0.64 & 322.80 & 16.64 & 159.00 & 30.00 & 83123.00 & 0.84 & 1.00\\
+
+ & (50+1) EA [simple] & 152.90 & \cellcolor{gray!80}{\textbf{11.61}} & 76.50 & 33.00 & 207416.00 & 0.68 & 0.77 & 124.90 & \cellcolor{gray!80}{\textbf{11.80}} & 62.00 & 32.00 & 263098.00 & 0.88 & 1.02\\
+
+ & QD [all] & \cellcolor{gray!80}{\textbf{1932.00}} & 56.22 & \cellcolor{gray!80}{\textbf{969.00}} & 49.00 & 2825.00 & 0.56 & \cellcolor{gray!80}{\textbf{0.61}} & \cellcolor{gray!80}{\textbf{1797.50}} & 83.49 & \cellcolor{gray!80}{\textbf{893.00}} & 28.00 & 4918.00 & 0.82 & \cellcolor{gray!80}{\textbf{0.97}}\\
+
+\multirow{-6}{*}{\raggedright\arraybackslash FC2} & QD [simple] & 864.90 & 64.88 & 428.50 & 47.00 & 9814.00 & 0.64 & 0.71 & 751.70 & 82.66 & 373.50 & 27.00 & 15761.00 & 0.88 & 0.99\\
+\bottomrule
+\end{tabular}
+\end{table}

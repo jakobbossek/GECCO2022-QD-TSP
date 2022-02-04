@@ -10,6 +10,7 @@ union_string = function(...) {
 }
 
 plot_progress = function(tmp) {
+  tmp$feature.names = gsub(",", "\nvs\n", tmp$feature.names)
   g = ggplot(tmp, aes(x = n.evals, y = n.mean, color = evolver, shape = evolver))
   g = g + geom_line(aes(group = evolver))
   g = g + geom_point()
